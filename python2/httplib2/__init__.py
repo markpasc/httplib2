@@ -390,12 +390,15 @@ def _decompressContent(response, new_content):
             if encoding == 'gzip':
                 content = gzip.GzipFile(fileobj=StringIO.StringIO(new_content)).read()
             if encoding == 'deflate':
-                content = zlib.decompress(content)
+                try:
+                    content = zlib.decompress(content, -zlib.MAX_WBITS)
+                except zlib.error:
+                    content = zlib.decompress(content)
             response['content-length'] = str(len(content))
             # Record the historical presence of the encoding in a way the won't interfere.
             response['-content-encoding'] = response['content-encoding']
             del response['content-encoding']
-    except IOError:
+    except (IOError, zlib.error):
         content = ""
         raise FailedToDecompressContent(_("Content purported to be compressed with %s but failed to decompress.") % response.get('content-encoding'), response, content)
     return content
