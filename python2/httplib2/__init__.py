@@ -54,6 +54,7 @@ except ImportError:
 import hmac
 from gettext import gettext as _
 import socket
+import struct
 
 try:
     from httplib2 import socks
@@ -398,7 +399,7 @@ def _decompressContent(response, new_content):
             # Record the historical presence of the encoding in a way the won't interfere.
             response['-content-encoding'] = response['content-encoding']
             del response['content-encoding']
-    except (IOError, zlib.error):
+    except (IOError, zlib.error, struct.error):
         content = ""
         raise FailedToDecompressContent(_("Content purported to be compressed with %s but failed to decompress.") % response.get('content-encoding'), response, content)
     return content
